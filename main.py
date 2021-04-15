@@ -13,56 +13,34 @@ class MainWindow(Tk):
 
         self.statusLabel = None
         self.statusVar = None
-        self.quit = None
+        self.quitBTN = None
+        self.restartBTN = None
 
         self.unusedCards = []
-        self.usedCards = []
 
+        self.board_cards = []
         self.selected_cards = []
 
         self.generateAllCards()
         self.drawStatusLabel()
         self.drawQuitButton()
-        self.drawCardButtons()
+        self.drawCardButtonsNewGame()
 
-    def addCardToSelected(self, card_button):
-        print(card_button.number, card_button.fill, card_button.shape, card_button.colour)
+    def checkGameEnd(self):
+        if len(self.unusedCards) == 0:
+            return True
+        return False
 
-        if card_button in self.selected_cards:
-            return
+    def drawCardButtonsNewGame(self):
 
-        card_button.configure(highlightbackground="#30FFFF")
-
-        self.selected_cards.append(card_button)
-
-        if len(self.selected_cards) == 3:
-            found_set = CardButton.check_set(self.selected_cards)
-            if found_set:
-                msg = "Found a set :)"
-            else:
-                msg = "Not a set :("
-            print(msg)
-            self.statusLabel.configure(text=msg)
-            for card in self.selected_cards:
-                card.configure(highlightbackground="white")
-            self.selected_cards = []
-        else:
-            self.statusVar.set("---")
-
-    def drawCardButtons(self):
-
-        for i in range(0,4):
-            for j in range(0,3):
-                card_index = random.randint(0, len(self.unusedCards)-1)
-                new_card = self.unusedCards.pop(card_index)
-                new_card.configure(
-                    command=partial(self.addCardToSelected, new_card))
-                new_card.grid(row=i, column=j)
+        for row in range(0, 4):
+            for column in range(0, 3):
+                self.placeNewCard(row, column)
 
     def drawQuitButton(self):
 
-        self.quit = Button(self, text="QUIT", highlightbackground="red", command=self.destroy)
-        self.quit.grid(row=5, column=1)
+        self.quitBTN = Button(self, text="QUIT", highlightbackground="red", command=self.destroy)
+        self.quitBTN.grid(row=5, column=1)
 
     def drawStatusLabel(self):
 
@@ -82,6 +60,73 @@ class MainWindow(Tk):
                         self.__getattribute__(button_name)["text"] = self.__getattribute__(button_name).getText()
                         self.unusedCards.append(self.__getattribute__(button_name))
                         i += 1
+
+    def placeNewCard(self, row, column):
+        card_index = random.randint(0, len(self.unusedCards) - 1)
+
+        new_card = self.unusedCards.pop(card_index)
+        new_card.configure(
+            command=partial(self.selectCard, new_card))
+        new_card.grid(row=row, column=column)
+        self.board_cards.append(new_card)
+
+    def replaceValidSet(self, card_list):
+
+        for card in card_list:
+            grid_info = card.grid_info()
+            self.placeNewCard(grid_info.get('row'), grid_info.get('column'))
+            card.destroy()
+            self.board_cards = [c for c in self.board_cards if c != card]
+
+    def restartGame(self):
+
+        self.restartBTN.destroy()
+        self.updateStatus("New game!")
+        for card in self.board_cards:
+            card.destroy()
+        self.board_cards = []
+        self.generateAllCards()
+        self.drawCardButtonsNewGame()
+
+    def selectCard(self, card_button):
+        print(card_button.number, card_button.fill, card_button.shape, card_button.colour)
+
+        if card_button in self.selected_cards:
+            # toggle selection
+            card_button.configure(highlightbackground="white")
+            self.selected_cards = [c for c in self.selected_cards if c != card_button]
+            return
+
+        card_button.configure(highlightbackground="#30FFFF")
+
+        self.selected_cards.append(card_button)
+
+        if len(self.selected_cards) == 3:
+            found_set = CardButton.check_set(self.selected_cards)
+            if found_set:
+                msg = "Found a set :)"
+                if not self.checkGameEnd():
+                    self.replaceValidSet(self.selected_cards)
+                else:
+                    self.setGameEnd()
+            else:
+                msg = "Not a set :("
+                for card in self.selected_cards:
+                    card.configure(highlightbackground="white")
+            print(msg)
+            self.updateStatus(msg)
+            self.selected_cards = []
+        else:
+            self.statusVar.set("---")
+
+    def setGameEnd(self):
+
+        self.updateStatus("Game over!")
+        self.restartBTN = Button(text="Restart", highlightbackground="green", command=self.restartGame)
+        self.restartBTN.grid(row=5, column=2)
+
+    def updateStatus(self, msg):
+        self.statusLabel.configure(text=msg)
 
 
 win = MainWindow()
