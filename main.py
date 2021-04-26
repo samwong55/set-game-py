@@ -1,6 +1,7 @@
 from tkinter import *
-from card import CardButton, Colour, Fill, Shape
+from card import CardLabelButton, Colour, Fill, Shape
 from functools import partial
+from PIL import ImageTk, Image
 import random
 
 
@@ -39,13 +40,13 @@ class MainWindow(Tk):
 
     def drawQuitButton(self):
 
-        self.quitBTN = Button(self, text="QUIT", highlightbackground="red", command=self.destroy)
+        self.quitBTN = Button(self, text="QUIT", background="red", command=self.destroy)
         self.quitBTN.grid(row=5, column=1)
 
     def drawStatusLabel(self):
 
         self.statusVar = StringVar()
-        self.statusLabel = Label(self, text="Welcome to new game", bg="#A0A0E0", relief=RAISED)
+        self.statusLabel = Label(self, text="Welcome to SET!", bg="#A0A0E0", relief=RAISED)
         self.statusLabel.grid(row=5, column=0)
 
     def generateAllCards(self):
@@ -53,20 +54,42 @@ class MainWindow(Tk):
         for num in range(1, 4):
             for colour in Colour:
                 for fill in Fill:
-                    for shape in Shape:
-                        #TODO: i think this can be changed to just use "temp_button" because we dont need a reference to each button from the main class
-                        button_name = "button{0}".format(i)
-                        self.__setattr__(button_name, CardButton(num, colour, fill, shape))
-                        self.__getattribute__(button_name)["text"] = self.__getattribute__(button_name).getText()
-                        self.unusedCards.append(self.__getattribute__(button_name))
+                    for shape in [Shape.DIAMOND]:
+                    # for shape in Shape:
+
+                        bg_img = Image.open("./img/gif/white-bg.gif")
+                        bg_img = bg_img.convert("RGB")
+                        img = Image.open("./img/gif/1-{0}-{1}-{2}.gif".format(
+                            fill.name.lower(),
+                            colour.name.lower(),
+                            shape.name.lower()
+                        ))
+                        img = img.convert("RGB")
+
+                        width = img.size[0]
+                        if num == 1:
+                            bg_img.paste(img, (width, 0))
+                        elif num == 2:
+                            bg_img.paste(img, (round(bg_img.size[0] * 0.5) - width, 0))
+                            bg_img.paste(img, (round(bg_img.size[0] * 0.5), 0))
+                        else:
+                            bg_img.paste(img, (0, 0))
+                            bg_img.paste(img, (width, 0))
+                            bg_img.paste(img, (width * 2, 0))
+
+                        bg_img = bg_img.resize((round(bg_img.size[0] * 0.5), round(bg_img.size[1] * 0.5)))
+                        test = ImageTk.PhotoImage(bg_img)
+
+                        temp_but = CardLabelButton(num, colour, fill, shape, image=test, compound="right")
+                        temp_but.image = test
+                        self.unusedCards.append(temp_but)
                         i += 1
 
     def placeNewCard(self, row, column):
         card_index = random.randint(0, len(self.unusedCards) - 1)
 
         new_card = self.unusedCards.pop(card_index)
-        new_card.configure(
-            command=partial(self.selectCard, new_card))
+        new_card.setClickedSlot(lambda a: self.selectCard(new_card))
         new_card.grid(row=row, column=column)
         self.board_cards.append(new_card)
 
@@ -93,16 +116,16 @@ class MainWindow(Tk):
 
         if card_button in self.selected_cards:
             # toggle selection
-            card_button.configure(highlightbackground="white")
+            card_button.configure(background="white")
             self.selected_cards = [c for c in self.selected_cards if c != card_button]
             return
 
-        card_button.configure(highlightbackground="#30FFFF")
+        card_button.configure(background="#30FFFF")
 
         self.selected_cards.append(card_button)
 
         if len(self.selected_cards) == 3:
-            found_set = CardButton.check_set(self.selected_cards)
+            found_set = CardLabelButton.check_set(self.selected_cards)
             if found_set:
                 msg = "Found a set :)"
                 if not self.checkGameEnd():
@@ -112,7 +135,7 @@ class MainWindow(Tk):
             else:
                 msg = "Not a set :("
                 for card in self.selected_cards:
-                    card.configure(highlightbackground="white")
+                    card.configure(background="white")
             print(msg)
             self.updateStatus(msg)
             self.selected_cards = []
@@ -122,7 +145,7 @@ class MainWindow(Tk):
     def setGameEnd(self):
 
         self.updateStatus("Game over!")
-        self.restartBTN = Button(text="Restart", highlightbackground="green", command=self.restartGame)
+        self.restartBTN = Button(text="Restart", background="green", command=self.restartGame)
         self.restartBTN.grid(row=5, column=2)
 
     def updateStatus(self, msg):

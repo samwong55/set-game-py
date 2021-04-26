@@ -1,5 +1,5 @@
 from enum import Enum
-from tkinter import Button
+from tkinter import Label
 
 class Colour(Enum):
     GREEN = 1
@@ -19,7 +19,7 @@ class Shape(Enum):
     SQUIGGLE = 3
 
 
-class CardButton(Button):
+class CardLabelButton(Label):
     def __init__(self, number, colour, fill, shape, **kwargs):
         """
         :param  number  | <int>
@@ -31,7 +31,7 @@ class CardButton(Button):
         if number not in (1, 2, 3):
             raise
 
-        super(CardButton, self).__init__(**kwargs)
+        super(CardLabelButton, self).__init__(**kwargs)
 
         self["activebackground"] = "green"
 
@@ -48,6 +48,9 @@ class CardButton(Button):
             self.shape.name.lower(),
             "" if self.number == 1 else "s"
         )
+
+    def setClickedSlot(self, slot):
+        self.bind("<Button-1>", slot)
 
     @staticmethod
     def check_colour(card1, card2, card3):
