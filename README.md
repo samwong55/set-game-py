@@ -1,6 +1,18 @@
 # set-game-py
 coding practice implementing the card game SET
 
+# Setup
+* Install Python 3
+* Clone this repo
+* In the root folder, run
+    ```
+    pip install -r requirements.txt
+    ```
+* To start the game, run
+    ```
+    python main.py
+    ```
+
 
 ### Next to-dos
 
