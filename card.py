@@ -40,6 +40,9 @@ class CardLabelButton(Label):
         self.fill = fill
         self.shape = shape
 
+    def clearClickedSlot(self):
+        self.unbind("<Button-1>")
+
     def getText(self):
         return "{0} {1} {2} {3}{4}".format(
             self.number,

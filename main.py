@@ -132,6 +132,7 @@ class MainWindow(Tk):
                     self.replaceValidSet(self.selected_cards)
                 else:
                     self.setGameEnd()
+                    return
             else:
                 msg = "Not a set :("
                 for card in self.selected_cards:
@@ -144,9 +145,11 @@ class MainWindow(Tk):
 
     def setGameEnd(self):
 
-        self.updateStatus("Game over!")
+        for card in self.board_cards:
+            card.clearClickedSlot()
         self.restartBTN = Button(text="Restart", background="green", command=self.restartGame)
         self.restartBTN.grid(row=5, column=2)
+        self.updateStatus("Game over!")
 
     def updateStatus(self, msg):
         self.statusLabel.configure(text=msg)
