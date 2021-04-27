@@ -11,7 +11,7 @@ class Colour(Enum):
 class ColourCode(Enum):
     GREEN = "#0D8C0D"
     PURPLE = "#6929E7"
-    RED = "#FF0000"
+    RED = "#FF2020"
 
 class Fill(Enum):
     EMPTY = 1

@@ -125,7 +125,7 @@ class MainWindow(Tk):
             self.selected_cards = [c for c in self.selected_cards if c != card_button]
             return
 
-        card_button.configure(borderwidth=5, relief="sunken")
+        card_button.configure(borderwidth=3, relief="sunken")
 
         self.selected_cards.append(card_button)
 
