@@ -1,11 +1,17 @@
 from enum import Enum
 from tkinter import Label
 
+
 class Colour(Enum):
     GREEN = 1
     PURPLE = 2
     RED = 3
 
+
+class ColourCode(Enum):
+    GREEN = "#0D8C0D"
+    PURPLE = "#6929E7"
+    RED = "#FF0000"
 
 class Fill(Enum):
     EMPTY = 1

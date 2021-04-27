@@ -1,5 +1,5 @@
 from tkinter import *
-from card import CardLabelButton, Colour, Fill, Shape
+from card import CardLabelButton, Colour, ColourCode, Fill, Shape
 from functools import partial
 from PIL import ImageTk, Image
 import random
@@ -57,13 +57,16 @@ class MainWindow(Tk):
                     for shape in Shape:
 
                         bg_img = Image.open("./img/gif/white-bg.gif")
-                        bg_img = bg_img.convert("RGB")
+                        bg_img = bg_img.resize((round(bg_img.size[0] * 0.5), round(bg_img.size[1] * 0.5)))
+                        bg_img = bg_img.convert("RGBA")
+
                         img = Image.open("./img/gif/1-{0}-{1}-{2}.gif".format(
                             fill.name.lower(),
-                            colour.name.lower(),
+                            "transparent",
                             shape.name.lower()
                         ))
-                        img = img.convert("RGB")
+                        img = img.resize((round(img.size[0] * 0.5), round(img.size[1] * 0.5)))
+                        img = img.convert("RGBA")
 
                         width = img.size[0]
                         if num == 1:
@@ -76,10 +79,13 @@ class MainWindow(Tk):
                             bg_img.paste(img, (width, 0))
                             bg_img.paste(img, (width * 2, 0))
 
-                        bg_img = bg_img.resize((round(bg_img.size[0] * 0.5), round(bg_img.size[1] * 0.5)))
                         test = ImageTk.PhotoImage(bg_img)
 
-                        temp_but = CardLabelButton(num, colour, fill, shape, image=test, compound="right")
+                        temp_but = CardLabelButton(num, colour, fill, shape,
+                                                   background=ColourCode[colour.name].value,
+                                                   border=0,
+                                                   compound="right",
+                                                   image=test)
                         temp_but.image = test
                         self.unusedCards.append(temp_but)
                         i += 1
@@ -115,11 +121,11 @@ class MainWindow(Tk):
 
         if card_button in self.selected_cards:
             # toggle selection
-            card_button.configure(background="white")
+            card_button.configure(borderwidth=0)
             self.selected_cards = [c for c in self.selected_cards if c != card_button]
             return
 
-        card_button.configure(background="#30FFFF")
+        card_button.configure(borderwidth=5, relief="sunken")
 
         self.selected_cards.append(card_button)
 
@@ -135,7 +141,7 @@ class MainWindow(Tk):
             else:
                 msg = "Not a set :("
                 for card in self.selected_cards:
-                    card.configure(background="white")
+                    card.configure(borderwidth=0)
             print(msg)
             self.updateStatus(msg)
             self.selected_cards = []
