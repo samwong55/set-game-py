@@ -1,6 +1,5 @@
 from tkinter import *
 from card import CardLabelButton, Colour, ColourCode, Fill, Shape
-from functools import partial
 from PIL import ImageTk, Image
 import random
 
@@ -12,6 +11,7 @@ class MainWindow(Tk):
         self.title("Python Tkinter SET Game")
         self.minsize(500, 400)
 
+        self.fifthRowExists = False
         self.statusLabel = None
         self.statusVar = None
         self.quitBTN = None
@@ -23,14 +23,27 @@ class MainWindow(Tk):
         self.selected_cards = []
 
         self.generateAllCards()
+        self.drawAddRowButton()
         self.drawStatusLabel()
         self.drawQuitButton()
         self.drawCardButtonsNewGame()
+
+    def addNewRow(self):
+        if not self.fifthRowExists:
+            for col in range(0, 3):
+                self.placeNewCard(5, col)
+            self.fifthRowExists = True
+        else:
+            self.updateStatus("Already dealt fifth row!")
 
     def checkGameEnd(self):
         if len(self.unusedCards) == 0:
             return True
         return False
+
+    def drawAddRowButton(self):
+        self.addRowBTN = Button(self, text="Add New Row", command=self.addNewRow)
+        self.addRowBTN.grid(row=6, column=0)
 
     def drawCardButtonsNewGame(self):
 
@@ -41,13 +54,13 @@ class MainWindow(Tk):
     def drawQuitButton(self):
 
         self.quitBTN = Button(self, text="QUIT", background="red", command=self.destroy)
-        self.quitBTN.grid(row=5, column=2)
+        self.quitBTN.grid(row=6, column=2)
 
     def drawStatusLabel(self):
 
         self.statusVar = StringVar()
         self.statusLabel = Label(self, text="Welcome to SET!")
-        self.statusLabel.grid(row=5, column=1)
+        self.statusLabel.grid(row=6, column=1)
 
     def generateAllCards(self):
         i = 1
@@ -84,6 +97,8 @@ class MainWindow(Tk):
                         temp_but = CardLabelButton(num, colour, fill, shape,
                                                    background=ColourCode[colour.name].value,
                                                    border=0,
+                                                   highlightbackground="white",
+                                                   highlightthickness=3,
                                                    compound="right",
                                                    image=test)
                         temp_but.image = test
@@ -121,11 +136,11 @@ class MainWindow(Tk):
 
         if card_button in self.selected_cards:
             # toggle selection
-            card_button.configure(borderwidth=0)
+            card_button.configure(highlightbackground="white")
             self.selected_cards = [c for c in self.selected_cards if c != card_button]
             return
 
-        card_button.configure(borderwidth=3, relief="sunken")
+        card_button.configure(highlightbackground="blue", relief="sunken")
 
         self.selected_cards.append(card_button)
 
@@ -134,14 +149,17 @@ class MainWindow(Tk):
             if found_set:
                 msg = "Found a set :)"
                 if not self.checkGameEnd():
-                    self.replaceValidSet(self.selected_cards)
+                    if self.fifthRowExists:
+                        self.shiftCardsUp(self.selected_cards)
+                    else:
+                        self.replaceValidSet(self.selected_cards)
                 else:
                     self.setGameEnd()
                     return
             else:
                 msg = "Not a set :("
                 for card in self.selected_cards:
-                    card.configure(borderwidth=0)
+                    card.configure(highlightbackground="white")
             print(msg)
             self.updateStatus(msg)
             self.selected_cards = []
@@ -153,8 +171,20 @@ class MainWindow(Tk):
         for card in self.board_cards:
             card.clearClickedSlot()
         self.restartBTN = Button(text="Restart", background="green", command=self.restartGame)
-        self.restartBTN.grid(row=5, column=0)
+        self.restartBTN.grid(row=6, column=0)
         self.updateStatus("Game over!")
+
+    def shiftCardsUp(self, card_list):
+        fifth_row_cards = self.grid_slaves(5)
+        for card in card_list:
+            grid_info = card.grid_info()
+            if grid_info.get('row') != 4:
+                row = grid_info.get('row')
+                col = grid_info.get('column')
+                fifth_row_cards.pop(0).grid(row=row, column=col)
+            card.destroy()
+            self.board_cards = [c for c in self.board_cards if c != card]
+        self.fifthRowExists = False
 
     def updateStatus(self, msg):
         self.statusLabel.configure(text=msg)

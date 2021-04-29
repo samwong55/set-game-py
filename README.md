@@ -18,7 +18,8 @@ coding practice implementing the card game SET
 
 * :ballot_box_with_check: replace cards when a set is found
 * :ballot_box_with_check: card selection toggle
-* pictures on cards
+* :ballot_box_with_check: pictures on cards
 * logic to determine whether a set is on the board
 * :ballot_box_with_check: game restart
 * check if there is still a set on the board after we run out of cards
+* :ballot_box_with_check: ability to add 5th row of cards
