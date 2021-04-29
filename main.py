@@ -31,7 +31,7 @@ class MainWindow(Tk):
     def addNewRow(self):
         if not self.fifthRowExists:
             for col in range(0, 3):
-                self.placeNewCard(5, col)
+                self.placeNewCard(4, col)
             self.fifthRowExists = True
         else:
             self.updateStatus("Already dealt fifth row!")
@@ -43,7 +43,7 @@ class MainWindow(Tk):
 
     def drawAddRowButton(self):
         self.addRowBTN = Button(self, text="Add New Row", command=self.addNewRow)
-        self.addRowBTN.grid(row=6, column=0)
+        self.addRowBTN.grid(row=5, column=0)
 
     def drawCardButtonsNewGame(self):
 
@@ -54,13 +54,13 @@ class MainWindow(Tk):
     def drawQuitButton(self):
 
         self.quitBTN = Button(self, text="QUIT", background="red", command=self.destroy)
-        self.quitBTN.grid(row=6, column=2)
+        self.quitBTN.grid(row=5, column=2)
 
     def drawStatusLabel(self):
 
         self.statusVar = StringVar()
         self.statusLabel = Label(self, text="Welcome to SET!")
-        self.statusLabel.grid(row=6, column=1)
+        self.statusLabel.grid(row=5, column=1)
 
     def generateAllCards(self):
         i = 1
@@ -171,17 +171,23 @@ class MainWindow(Tk):
         for card in self.board_cards:
             card.clearClickedSlot()
         self.restartBTN = Button(text="Restart", background="green", command=self.restartGame)
-        self.restartBTN.grid(row=6, column=0)
+        self.restartBTN.grid(row=5, column=0)
         self.updateStatus("Game over!")
 
     def shiftCardsUp(self, card_list):
-        fifth_row_cards = self.grid_slaves(5)
+        fifth_row_cards = self.grid_slaves(4)
+        remaining_fifth_row_cards = []  # these cards will be moved to fill empty spaces
+        for card in fifth_row_cards:
+            if card not in card_list:
+                remaining_fifth_row_cards.append(card)
+
         for card in card_list:
+            # get card's position in the original 3x4 grid, replace it with a remaining 5th row card
             grid_info = card.grid_info()
-            if grid_info.get('row') != 4:
+            if grid_info.get('row') != '4':
                 row = grid_info.get('row')
                 col = grid_info.get('column')
-                fifth_row_cards.pop(0).grid(row=row, column=col)
+                remaining_fifth_row_cards.pop(0).grid(row=row, column=col)
             card.destroy()
             self.board_cards = [c for c in self.board_cards if c != card]
         self.fifthRowExists = False
